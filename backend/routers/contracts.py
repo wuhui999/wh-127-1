@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
 
 from database import get_db
-from models import Contract, Orchard, User, Hive
+from models import Contract, Orchard, User, Hive, Inspection, Anomaly, Settlement
 from schemas import (
     ContractCreate,
     ContractUpdate,
@@ -13,6 +13,9 @@ from schemas import (
     OrchardResponse,
     UserResponse,
     HiveResponse,
+    InspectionResponse,
+    AnomalyResponse,
+    SettlementResponse,
 )
 from auth import get_current_user
 
@@ -117,7 +120,56 @@ def get_contract(
     )
     if not contract:
         raise HTTPException(status_code=404, detail="合同不存在")
-    return contract
+
+    hive_ids = [h.id for h in contract.hives]
+
+    inspection_rows = (
+        db.query(Inspection)
+        .options(joinedload(Inspection.hive), joinedload(Inspection.inspector))
+        .filter(Inspection.hive_id.in_(hive_ids))
+        .order_by(Inspection.inspected_at.desc())
+        .all()
+    ) if hive_ids else []
+    inspections = []
+    for insp in inspection_rows:
+        resp = InspectionResponse.model_validate(insp)
+        resp.hive_no = insp.hive.hive_no if insp.hive else None
+        resp.inspector_name = insp.inspector.real_name if insp.inspector else None
+        inspections.append(resp)
+
+    anomaly_rows = (
+        db.query(Anomaly)
+        .options(joinedload(Anomaly.hive), joinedload(Anomaly.contract))
+        .filter(Anomaly.contract_id == contract_id)
+        .order_by(Anomaly.created_at.desc())
+        .all()
+    )
+    anomalies = []
+    for a in anomaly_rows:
+        resp = AnomalyResponse.model_validate(a)
+        resp.hive_no = a.hive.hive_no if a.hive else None
+        resp.contract_no = a.contract.contract_no if a.contract else None
+        anomalies.append(resp)
+
+    settlement_rows = (
+        db.query(Settlement)
+        .options(joinedload(Settlement.contract).joinedload(Contract.orchard))
+        .filter(Settlement.contract_id == contract_id)
+        .order_by(Settlement.created_at.desc())
+        .all()
+    )
+    settlements = []
+    for s in settlement_rows:
+        resp = SettlementResponse.model_validate(s)
+        resp.contract_no = s.contract.contract_no if s.contract else None
+        resp.orchard_name = s.contract.orchard.name if s.contract and s.contract.orchard else None
+        settlements.append(resp)
+
+    detail = ContractDetail.model_validate(contract)
+    detail.inspections = inspections
+    detail.anomalies = anomalies
+    detail.settlements = settlements
+    return detail
 
 
 @router.put("/{contract_id}", response_model=ContractResponse)

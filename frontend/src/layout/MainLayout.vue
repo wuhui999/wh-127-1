@@ -31,7 +31,7 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <span class="user-name">{{ userStore.state.user?.name || '用户' }}</span>
+          <span class="user-name">{{ userStore.state.user?.real_name || '用户' }}</span>
           <el-tag size="small" type="success" class="role-tag">{{ roleLabel }}</el-tag>
           <el-button type="danger" text @click="handleLogout">
             <el-icon><SwitchButton /></el-icon> 退出
@@ -56,13 +56,13 @@ const userStore = useUserStore()
 const isCollapse = ref(false)
 
 const allMenus = [
-  { path: '/dashboard', label: '首页', icon: 'HomeFilled', roles: ['蜂农', '果园主', '监管员', '管理员'] },
-  { path: '/contracts', label: '合同管理', icon: 'Document', roles: ['果园主', '监管员', '管理员'] },
-  { path: '/hive-map', label: '投放地图', icon: 'MapLocation', roles: ['蜂农', '管理员'] },
-  { path: '/inspections', label: '巡检管理', icon: 'View', roles: ['蜂农', '监管员', '管理员'] },
-  { path: '/anomalies', label: '异常管理', icon: 'Warning', roles: ['蜂农', '监管员', '管理员'] },
-  { path: '/settlements', label: '结算管理', icon: 'Money', roles: ['果园主', '监管员', '管理员'] },
-  { path: '/orchards', label: '果园管理', icon: 'Cherry', roles: ['果园主', '管理员'] }
+  { path: '/dashboard', label: '首页', icon: 'HomeFilled', roles: ['beekeeper', 'orchard_owner', 'supervisor', 'admin'] },
+  { path: '/contracts', label: '合同管理', icon: 'Document', roles: ['orchard_owner', 'supervisor', 'admin'] },
+  { path: '/hive-map', label: '投放地图', icon: 'MapLocation', roles: ['beekeeper', 'admin'] },
+  { path: '/inspections', label: '巡检管理', icon: 'View', roles: ['beekeeper', 'supervisor', 'admin'] },
+  { path: '/anomalies', label: '异常管理', icon: 'Warning', roles: ['beekeeper', 'supervisor', 'admin'] },
+  { path: '/settlements', label: '结算管理', icon: 'Money', roles: ['orchard_owner', 'supervisor', 'admin'] },
+  { path: '/orchards', label: '果园管理', icon: 'Cherry', roles: ['orchard_owner', 'admin'] }
 ]
 
 const visibleMenus = computed(() => {
@@ -83,7 +83,7 @@ const currentLabel = computed(() => {
   return m ? m.label : '首页'
 })
 
-const roleMap = { '蜂农': '蜂农', '果园主': '果园主', '监管员': '监管员', '管理员': '管理员' }
+const roleMap = { beekeeper: '蜂农', orchard_owner: '果园主', supervisor: '监管员', admin: '管理员' }
 const roleLabel = computed(() => roleMap[userStore.getRole()] || '未知')
 
 function handleLogout() {

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, timedelta
 
 from database import get_db
-from models import Inspection, Hive, Contract
+from models import Inspection, Hive, Contract, User
 from schemas import (
     InspectionCreate,
     InspectionResponse,
@@ -67,7 +67,10 @@ def list_inspections(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    query = db.query(Inspection)
+    query = db.query(Inspection).options(
+        joinedload(Inspection.hive),
+        joinedload(Inspection.inspector),
+    )
     if hive_id:
         query = query.filter(Inspection.hive_id == hive_id)
     if inspector_id:
@@ -77,7 +80,14 @@ def list_inspections(
     if end_date:
         query = query.filter(Inspection.inspected_at <= end_date)
     query = query.order_by(Inspection.inspected_at.desc())
-    return query.all()
+    results = query.all()
+    response = []
+    for insp in results:
+        resp = InspectionResponse.model_validate(insp)
+        resp.hive_no = insp.hive.hive_no if insp.hive else None
+        resp.inspector_name = insp.inspector.real_name if insp.inspector else None
+        response.append(resp)
+    return response
 
 
 @router.post("", response_model=InspectionResponse, status_code=status.HTTP_201_CREATED)

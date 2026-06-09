@@ -64,7 +64,7 @@
             <template #header><span>巡检摘要</span></template>
             <el-table :data="contract.inspections || []" stripe size="small">
               <el-table-column prop="hive_no" label="蜂箱" width="100" />
-              <el-table-column prop="inspector" label="巡检员" width="80" />
+              <el-table-column prop="inspector_name" label="巡检员" width="80" />
               <el-table-column prop="colony_strength" label="蜂群强度" width="80" align="center" />
               <el-table-column prop="inspected_at" label="巡检时间" />
             </el-table>

@@ -20,13 +20,12 @@
         </template>
         <div class="overdue-list">
           <el-tag
-            v-for="hive in overdueHives"
-            :key="hive.id"
-            :type="hive.days_overdue > 14 ? 'danger' : 'warning'"
+            v-for="item in overdueHives"
+            :key="item.hive.id"
+            :type="item.days_overdue > 14 ? 'danger' : 'warning'"
             style="margin: 2px 4px;"
           >
-            {{ hive.hive_no }} - 逾期{{ hive.days_overdue }}天
-            <span v-if="hive.risk_level"> (风险: {{ hive.risk_level }})</span>
+            {{ item.hive.hive_no }} - 逾期{{ item.days_overdue }}天
           </el-tag>
         </div>
       </el-alert>
@@ -50,20 +49,20 @@
 
       <el-table :data="inspections" stripe v-loading="loading">
         <el-table-column prop="hive_no" label="蜂箱编号" width="120" />
-        <el-table-column prop="inspector" label="巡检员" width="100" />
+        <el-table-column prop="inspector_name" label="巡检员" width="100" />
         <el-table-column prop="colony_strength" label="蜂群强度" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="strengthColor(row.colony_strength)" size="small">{{ row.colony_strength }}/10</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="pest_disease" label="病虫害" width="80" align="center">
+        <el-table-column prop="disease_found" label="病虫害" width="80" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.pest_disease ? 'danger' : 'success'" size="small">{{ row.pest_disease ? '有' : '无' }}</el-tag>
+            <el-tag :type="row.disease_found ? 'danger' : 'success'" size="small">{{ row.disease_found ? '有' : '无' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="supplementary_feeding" label="补饲" width="80" align="center">
+        <el-table-column prop="feeding_needed" label="补饲" width="80" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.supplementary_feeding ? 'warning' : 'info'" size="small">{{ row.supplementary_feeding ? '是' : '否' }}</el-tag>
+            <el-tag :type="row.feeding_needed ? 'warning' : 'info'" size="small">{{ row.feeding_needed ? '是' : '否' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="inspected_at" label="巡检时间" width="180" />
@@ -90,14 +89,14 @@
     <el-dialog v-model="detailVisible" title="巡检详情" width="550px">
       <el-descriptions :column="2" border v-if="currentInspection">
         <el-descriptions-item label="蜂箱编号">{{ currentInspection.hive_no }}</el-descriptions-item>
-        <el-descriptions-item label="巡检员">{{ currentInspection.inspector }}</el-descriptions-item>
+        <el-descriptions-item label="巡检员">{{ currentInspection.inspector_name }}</el-descriptions-item>
         <el-descriptions-item label="蜂群强度">{{ currentInspection.colony_strength }}/10</el-descriptions-item>
         <el-descriptions-item label="巡检时间">{{ currentInspection.inspected_at }}</el-descriptions-item>
-        <el-descriptions-item label="病虫害">{{ currentInspection.pest_disease ? '有' : '无' }}</el-descriptions-item>
-        <el-descriptions-item label="补饲">{{ currentInspection.supplementary_feeding ? '是' : '否' }}</el-descriptions-item>
-        <el-descriptions-item label="病虫害详情" :span="2">{{ currentInspection.pest_detail || '无' }}</el-descriptions-item>
+        <el-descriptions-item label="病虫害">{{ currentInspection.disease_found ? '有' : '无' }}</el-descriptions-item>
+        <el-descriptions-item label="补饲">{{ currentInspection.feeding_needed ? '是' : '否' }}</el-descriptions-item>
+        <el-descriptions-item label="病虫害详情" :span="2">{{ currentInspection.disease_detail || '无' }}</el-descriptions-item>
         <el-descriptions-item label="补饲详情" :span="2">{{ currentInspection.feeding_detail || '无' }}</el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ currentInspection.remarks || '无' }}</el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">{{ currentInspection.notes || '无' }}</el-descriptions-item>
       </el-descriptions>
     </el-dialog>
   </div>
@@ -125,12 +124,9 @@ function strengthColor(val) {
 async function loadInspections() {
   loading.value = true
   try {
-    const params = {
-      page: pagination.page,
-      size: pagination.size,
-      hive_no: filters.hive_no,
-      inspector: filters.inspector
-    }
+    const params = {}
+    if (filters.hive_no) params.hive_no = filters.hive_no
+    if (filters.inspector) params.inspector = filters.inspector
     if (filters.dateRange && filters.dateRange.length === 2) {
       params.start_date = filters.dateRange[0]
       params.end_date = filters.dateRange[1]

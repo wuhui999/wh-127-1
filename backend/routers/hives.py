@@ -25,13 +25,19 @@ def list_hives(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    query = db.query(Hive)
+    query = db.query(Hive).options(joinedload(Hive.contract))
     if status:
         query = query.filter(Hive.status == status)
     if contract_id is not None:
         query = query.filter(Hive.contract_id == contract_id)
     query = query.order_by(Hive.created_at.desc())
-    return query.all()
+    results = query.all()
+    response = []
+    for h in results:
+        resp = HiveResponse.model_validate(h)
+        resp.contract_no = h.contract.contract_no if h.contract else None
+        response.append(resp)
+    return response
 
 
 @router.post("", response_model=HiveResponse, status_code=status.HTTP_201_CREATED)

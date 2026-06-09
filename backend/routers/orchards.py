@@ -21,11 +21,17 @@ def list_orchards(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    query = db.query(Orchard)
+    query = db.query(Orchard).options(joinedload(Orchard.owner))
     if owner_id:
         query = query.filter(Orchard.owner_id == owner_id)
     query = query.order_by(Orchard.created_at.desc())
-    return query.all()
+    results = query.all()
+    response = []
+    for o in results:
+        resp = OrchardResponse.model_validate(o)
+        resp.owner_name = o.owner.real_name if o.owner else None
+        response.append(resp)
+    return response
 
 
 @router.post("", response_model=OrchardResponse, status_code=status.HTTP_201_CREATED)

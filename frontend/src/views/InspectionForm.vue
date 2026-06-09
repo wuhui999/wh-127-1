@@ -20,21 +20,21 @@
         </el-form-item>
 
         <el-form-item label="病虫害发现">
-          <el-switch v-model="form.pest_disease" active-text="有" inactive-text="无" />
+          <el-switch v-model="form.disease_found" active-text="有" inactive-text="无" />
         </el-form-item>
-        <el-form-item v-if="form.pest_disease" label="病虫害详情" prop="pest_detail">
-          <el-input v-model="form.pest_detail" type="textarea" :rows="3" placeholder="请描述病虫害情况" />
+        <el-form-item v-if="form.disease_found" label="病虫害详情" prop="disease_detail">
+          <el-input v-model="form.disease_detail" type="textarea" :rows="3" placeholder="请描述病虫害情况" />
         </el-form-item>
 
         <el-form-item label="需要补饲">
-          <el-switch v-model="form.supplementary_feeding" active-text="是" inactive-text="否" />
+          <el-switch v-model="form.feeding_needed" active-text="是" inactive-text="否" />
         </el-form-item>
-        <el-form-item v-if="form.supplementary_feeding" label="补饲详情" prop="feeding_detail">
+        <el-form-item v-if="form.feeding_needed" label="补饲详情" prop="feeding_detail">
           <el-input v-model="form.feeding_detail" type="textarea" :rows="3" placeholder="请描述补饲情况" />
         </el-form-item>
 
         <el-form-item label="备注">
-          <el-input v-model="form.remarks" type="textarea" :rows="3" placeholder="请输入备注" />
+          <el-input v-model="form.notes" type="textarea" :rows="3" placeholder="请输入备注" />
         </el-form-item>
 
         <el-form-item label="照片上传">
@@ -74,17 +74,17 @@ const fileList = ref([])
 const form = reactive({
   hive_id: null,
   colony_strength: 5,
-  pest_disease: false,
-  pest_detail: '',
-  supplementary_feeding: false,
+  disease_found: false,
+  disease_detail: '',
+  feeding_needed: false,
   feeding_detail: '',
-  remarks: ''
+  notes: ''
 })
 
 const rules = {
   hive_id: [{ required: true, message: '请选择蜂箱', trigger: 'change' }],
   colony_strength: [{ required: true, message: '请设置蜂群强度', trigger: 'change' }],
-  pest_detail: [{ required: true, message: '请描述病虫害情况', trigger: 'blur' }],
+  disease_detail: [{ required: true, message: '请描述病虫害情况', trigger: 'blur' }],
   feeding_detail: [{ required: true, message: '请描述补饲情况', trigger: 'blur' }]
 }
 
@@ -127,7 +127,11 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     const payload = { ...form }
-    payload.photo_names = fileList.value.map(f => f.name || f.url)
+    payload.photos = fileList.value.map(f => f.name || f.url).join(',')
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      try { payload.inspector_id = JSON.parse(userStr).id } catch { /* ignore */ }
+    }
     await inspectionApi.create(payload)
     ElMessage.success('巡检提交成功')
     router.push('/inspections')

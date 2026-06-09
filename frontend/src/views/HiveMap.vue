@@ -30,8 +30,8 @@
             <span v-if="hive.last_inspection_at">最近巡检: {{ hive.last_inspection_at }}</span>
             <span v-else style="color: #f56c6c;">未巡检</span>
           </div>
-          <div class="hive-info" v-if="hive.contract_info">
-            <span>合同: {{ hive.contract_info }}</span>
+          <div class="hive-info" v-if="hive.contract_no">
+            <span>合同: {{ hive.contract_no }}</span>
           </div>
         </div>
         <el-empty v-if="filteredHives.length === 0" description="暂无蜂箱数据" :image-size="40" />

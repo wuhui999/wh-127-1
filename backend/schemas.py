@@ -73,6 +73,7 @@ class OrchardResponse(BaseModel):
     gps_lng: Optional[float] = None
     address: Optional[str] = None
     created_at: datetime
+    owner_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -132,6 +133,9 @@ class ContractDetail(ContractResponse):
     orchard: Optional[OrchardResponse] = None
     beekeeper: Optional[UserResponse] = None
     hives: list["HiveResponse"] = []
+    inspections: list[InspectionResponse] = []
+    anomalies: list[AnomalyResponse] = []
+    settlements: list[SettlementResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -164,6 +168,7 @@ class HiveResponse(BaseModel):
     last_inspection_at: Optional[datetime] = None
     deployed_at: Optional[datetime] = None
     created_at: datetime
+    contract_no: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -201,6 +206,8 @@ class InspectionResponse(BaseModel):
     notes: Optional[str] = None
     inspected_at: datetime
     created_at: datetime
+    hive_no: Optional[str] = None
+    inspector_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -10,7 +10,7 @@
 
       <el-table :data="orchards" stripe v-loading="loading">
         <el-table-column prop="name" label="名称" width="140" />
-        <el-table-column prop="owner" label="所有者" width="120" />
+        <el-table-column prop="owner_name" label="所有者" width="120" />
         <el-table-column prop="location" label="位置" width="160" />
         <el-table-column prop="area" label="面积(亩)" width="100" align="center" />
         <el-table-column prop="crop_type" label="作物类型" width="120" />
@@ -44,8 +44,10 @@
         <el-form-item label="名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入果园名称" />
         </el-form-item>
-        <el-form-item label="所有者" prop="owner">
-          <el-input v-model="form.owner" placeholder="请输入所有者" />
+        <el-form-item label="所有者" prop="owner_id">
+          <el-select v-model="form.owner_id" placeholder="选择果园主" filterable style="width: 100%">
+            <el-option v-for="u in ownerList" :key="u.id" :label="u.real_name" :value="u.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="位置" prop="location">
           <el-input v-model="form.location" placeholder="请输入位置" />
@@ -74,7 +76,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { orchardApi } from '../api'
+import { orchardApi, authApi } from '../api'
 
 const loading = ref(false)
 const orchards = ref([])
@@ -82,11 +84,12 @@ const dialogVisible = ref(false)
 const submitLoading = ref(false)
 const editingId = ref(null)
 const formRef = ref(null)
+const ownerList = ref([])
 const pagination = reactive({ page: 1, size: 10, total: 0 })
 
 const form = reactive({
   name: '',
-  owner: '',
+  owner_id: null,
   location: '',
   area: 0,
   crop_type: '',
@@ -96,7 +99,7 @@ const form = reactive({
 
 const rules = {
   name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-  owner: [{ required: true, message: '请输入所有者', trigger: 'blur' }],
+  owner_id: [{ required: true, message: '请选择果园主', trigger: 'change' }],
   location: [{ required: true, message: '请输入位置', trigger: 'blur' }],
   crop_type: [{ required: true, message: '请输入作物类型', trigger: 'blur' }]
 }
@@ -115,7 +118,7 @@ async function loadOrchards() {
 }
 
 function resetForm() {
-  Object.assign(form, { name: '', owner: '', location: '', area: 0, crop_type: '', gps_lat: null, gps_lng: null })
+  Object.assign(form, { name: '', owner_id: null, location: '', area: 0, crop_type: '', gps_lat: null, gps_lng: null })
 }
 
 function openDialog(row) {
@@ -123,7 +126,7 @@ function openDialog(row) {
     editingId.value = row.id
     Object.assign(form, {
       name: row.name,
-      owner: row.owner,
+      owner_id: row.owner_id,
       location: row.location,
       area: row.area,
       crop_type: row.crop_type,
@@ -167,7 +170,17 @@ async function handleDelete(row) {
   } catch { /* cancelled */ }
 }
 
-onMounted(loadOrchards)
+async function loadOwners() {
+  try {
+    const { data } = await authApi.listUsers({ role: 'orchard_owner' })
+    ownerList.value = data || []
+  } catch { /* ignore */ }
+}
+
+onMounted(() => {
+  loadOrchards()
+  loadOwners()
+})
 </script>
 
 <style scoped>

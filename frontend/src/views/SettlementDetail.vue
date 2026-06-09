@@ -25,14 +25,14 @@
       <el-card shadow="hover" style="margin-top: 16px;">
         <template #header><span>费用明细</span></template>
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="蜂箱日数">{{ settlement.hive_days }}</el-descriptions-item>
+          <el-descriptions-item label="蜂箱日数">{{ settlement.total_hive_days }}</el-descriptions-item>
           <el-descriptions-item label="单价">{{ settlement.unit_price }} 元/箱/天</el-descriptions-item>
           <el-descriptions-item label="基础金额">{{ settlement.base_amount }} 元</el-descriptions-item>
           <el-descriptions-item label="异常扣费">
-            <span :style="{ color: settlement.anomaly_deductions > 0 ? '#f56c6c' : '' }">{{ settlement.anomaly_deductions }} 元</span>
+            <span :style="{ color: settlement.anomaly_deduction > 0 ? '#f56c6c' : '' }">{{ settlement.anomaly_deduction }} 元</span>
           </el-descriptions-item>
           <el-descriptions-item label="违约扣费">
-            <span :style="{ color: settlement.penalty_deductions > 0 ? '#f56c6c' : '' }">{{ settlement.penalty_deductions }} 元</span>
+            <span :style="{ color: settlement.penalty_deduction > 0 ? '#f56c6c' : '' }">{{ settlement.penalty_deduction }} 元</span>
           </el-descriptions-item>
           <el-descriptions-item label="应付金额">
             <span style="font-size: 20px; font-weight: 700; color: #f56c6c;">{{ settlement.total_amount }} 元</span>
