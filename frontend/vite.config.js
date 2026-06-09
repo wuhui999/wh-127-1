@@ -11,5 +11,17 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      'axios',
+      'element-plus',
+      '@element-plus/icons-vue',
+      'dayjs',
+      'dayjs/locale/zh-cn',
+      'dayjs/plugin/customParseFormat'
+    ]
   }
 })
